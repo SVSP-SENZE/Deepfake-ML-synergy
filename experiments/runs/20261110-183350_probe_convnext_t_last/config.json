@@ -1,0 +1,9 @@
+{
+  "run_id": "20261110-183350_probe_convnext_t_last",
+  "seed": 0,
+  "git": "no-git",
+  "probe": "logreg",
+  "backbone": "convnext_t",
+  "layers": "last",
+  "C": 0.001
+}

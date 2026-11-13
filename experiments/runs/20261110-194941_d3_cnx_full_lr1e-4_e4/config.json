@@ -1,0 +1,20 @@
+{
+  "run_id": "20261110-194941_d3_cnx_full_lr1e-4_e4",
+  "seed": 42,
+  "git": "no-git",
+  "backbone": "convnext_t",
+  "regime": "full",
+  "folds": [
+    0
+  ],
+  "epochs": 4,
+  "lr": 0.0001,
+  "wd": 0.05,
+  "batch_size": 64,
+  "shift": 8,
+  "label_smoothing": 0.0,
+  "head_lr_mult": 10,
+  "kill_below": null,
+  "robustness": true,
+  "hflip": true
+}

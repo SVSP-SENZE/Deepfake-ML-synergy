@@ -1,0 +1,17 @@
+{
+  "run_id": "20261110-184739_e1_vit_full_f0",
+  "seed": 42,
+  "git": "no-git",
+  "backbone": "vit_b16",
+  "regime": "full",
+  "folds": [
+    0
+  ],
+  "epochs": 8,
+  "lr": 5e-05,
+  "wd": 0.05,
+  "batch_size": 64,
+  "shift": 8,
+  "label_smoothing": 0.0,
+  "hflip": true
+}

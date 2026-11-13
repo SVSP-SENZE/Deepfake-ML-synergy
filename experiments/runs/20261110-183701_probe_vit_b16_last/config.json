@@ -1,0 +1,9 @@
+{
+  "run_id": "20261110-183701_probe_vit_b16_last",
+  "seed": 0,
+  "git": "no-git",
+  "probe": "logreg",
+  "backbone": "vit_b16",
+  "layers": "last",
+  "C": 0.001
+}

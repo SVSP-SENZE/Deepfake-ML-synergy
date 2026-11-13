@@ -1,0 +1,9 @@
+evaluated on 7000 images, folds [0, 1, 2, 3, 4]
+Spearman between members:
+  vit-cnx: 0.937
+ensemble                                 clean  [CI]          seen   unseen robust worst
+vit                                      0.9078 [0.902-0.917] 0.9059 0.9011 0.9037 0.8818
+cnx                                      0.9022 [0.896-0.911] 0.9019 0.8942 0.8984 0.8698
+vit+cnx [zlogit]                         0.9080 [0.902-0.917] 0.9068 0.9022 0.9047 0.8854
+vit+cnx [prob]                           0.9075 [0.901-0.916] 0.9063 0.9014 0.9041 0.8837
+vit+cnx [rank]                           0.9080 [0.902-0.917] 0.9068 0.9022 0.9047 0.8853

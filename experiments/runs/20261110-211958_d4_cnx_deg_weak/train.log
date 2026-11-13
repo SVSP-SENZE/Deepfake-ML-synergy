@@ -1,0 +1,31 @@
+fold 0
+  regime full: 27.82M trainable params
+  ep  1 loss 0.5748 val AUC 0.8804 (41s)
+  ep  2 loss 0.3945 val AUC 0.8984 (42s)
+  ep  3 loss 0.3074 val AUC 0.9050 (43s)
+  ep  4 loss 0.2424 val AUC 0.9050 (52s)
+fold 1
+  regime full: 27.82M trainable params
+  ep  1 loss 0.5768 val AUC 0.8718 (63s)
+  ep  2 loss 0.3887 val AUC 0.8925 (69s)
+  ep  3 loss 0.2875 val AUC 0.8935 (43s)
+  ep  4 loss 0.2219 val AUC 0.8936 (40s)
+AUC 0.8996 [0.887-0.912] folds [0.905, 0.8936]
+  clean_auc: 0.8996
+  robust_mean_auc: 0.8902
+  robust_worst_auc: 0.8272
+  worst_variant: pixelate0.25
+  seen_mean_auc: 0.8963
+  unseen_mean_auc: 0.8828
+  orig8_mean_auc: 0.8963
+  auc_jpeg75: 0.8990
+  auc_jpeg50: 0.8981
+  auc_blur1: 0.8986
+  auc_blur2.5: 0.8848
+  auc_downup0.5: 0.8984
+  auc_noise8: 0.8954
+  auc_colour: 0.8988
+  auc_occlude40: 0.8971
+  auc_gray: 0.8962
+  auc_pixelate0.25: 0.8272
+  auc_gamma0.6: 0.8983

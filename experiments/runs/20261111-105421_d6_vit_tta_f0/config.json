@@ -1,0 +1,27 @@
+{
+  "run_id": "20261111-105421_d6_vit_tta_f0",
+  "seed": 42,
+  "git": "no-git",
+  "backbone": "vit_b16",
+  "regime": "full",
+  "folds": [
+    0
+  ],
+  "epochs": 4,
+  "lr": 5e-05,
+  "wd": 0.05,
+  "batch_size": 64,
+  "shift": 8,
+  "label_smoothing": 0.0,
+  "head_lr_mult": 10,
+  "kill_below": null,
+  "degrade": "strong",
+  "loss": "bce",
+  "gce_q": 0.7,
+  "sce_beta": 1.0,
+  "prune": true,
+  "ema": 0.0,
+  "tta_check": true,
+  "robustness": true,
+  "hflip": true
+}

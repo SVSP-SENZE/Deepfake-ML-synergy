@@ -1,0 +1,22 @@
+{
+  "run_id": "20261110-224423_d4_vit_deg_xstrong",
+  "seed": 42,
+  "git": "no-git",
+  "backbone": "vit_b16",
+  "regime": "full",
+  "folds": [
+    0,
+    1
+  ],
+  "epochs": 4,
+  "lr": 5e-05,
+  "wd": 0.05,
+  "batch_size": 64,
+  "shift": 8,
+  "label_smoothing": 0.0,
+  "head_lr_mult": 10,
+  "kill_below": null,
+  "degrade": "xstrong",
+  "robustness": true,
+  "hflip": true
+}

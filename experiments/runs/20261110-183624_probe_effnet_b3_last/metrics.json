@@ -1,0 +1,7 @@
+{
+  "cv_auc": 0.7478884880023013,
+  "robust_mean_auc": 0.7400748833668204,
+  "robust_worst_auc": 0.7139664130403194,
+  "runtime_s": 26.8,
+  "notes": "CI 0.738-0.759; worst=blur2.5"
+}

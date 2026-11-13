@@ -1,0 +1,44 @@
+training on 6323 of 7000 images (677 pruned)
+== vit seed 1000
+  regime full: 85.80M trainable params
+  ep  1 loss 0.4200 (62s)
+  ep  2 loss 0.1839 (56s)
+  ep  3 loss 0.0870 (61s)
+  ep  4 loss 0.0415 (81s)
+   saved vit_s1000.pt (264s)
+== vit seed 1001
+  regime full: 85.80M trainable params
+  ep  1 loss 0.4096 (92s)
+  ep  2 loss 0.1595 (90s)
+  ep  3 loss 0.0731 (87s)
+  ep  4 loss 0.0310 (85s)
+   saved vit_s1001.pt (357s)
+== vit seed 1002
+  regime full: 85.80M trainable params
+  ep  1 loss 0.3948 (92s)
+  ep  2 loss 0.1637 (91s)
+  ep  3 loss 0.0794 (90s)
+  ep  4 loss 0.0336 (88s)
+   saved vit_s1002.pt (363s)
+== cnx seed 1000
+  regime full: 27.82M trainable params
+  ep  1 loss 0.4721 (81s)
+  ep  2 loss 0.1978 (128s)
+  ep  3 loss 0.0997 (163s)
+  ep  4 loss 0.0692 (80s)
+   saved cnx_s1000.pt (453s)
+== cnx seed 1001
+  regime full: 27.82M trainable params
+  ep  1 loss 0.4840 (76s)
+  ep  2 loss 0.1812 (82s)
+  ep  3 loss 0.1015 (81s)
+  ep  4 loss 0.0613 (80s)
+   saved cnx_s1001.pt (321s)
+== cnx seed 1002
+  regime full: 27.82M trainable params
+  ep  1 loss 0.4688 (81s)
+  ep  2 loss 0.1874 (80s)
+  ep  3 loss 0.0982 (80s)
+  ep  4 loss 0.0603 (81s)
+   saved cnx_s1002.pt (323s)
+wrote ensemble.json; files: ['cnx_s1000.pt', 'cnx_s1001.pt', 'cnx_s1002.pt', 'vit_s1000.pt', 'vit_s1001.pt', 'vit_s1002.pt']

@@ -1,0 +1,22 @@
+fold 0
+  ep  1 loss 0.5592 val AUC 0.8793 (45s)
+  ep  2 loss 0.3839 val AUC 0.9100 (47s)
+  ep  3 loss 0.3243 val AUC 0.9037 (49s)
+  ep  4 loss 0.2413 val AUC 0.9033 (50s)
+  ep  5 loss 0.1308 val AUC 0.9000 (51s)
+  ep  6 loss 0.0636 val AUC 0.8964 (51s)
+  ep  7 loss 0.0209 val AUC 0.9027 (51s)
+  ep  8 loss 0.0140 val AUC 0.9034 (52s)
+AUC 0.9034 [0.888-0.923] folds [0.9034]
+  clean_auc: 0.9034
+  robust_mean_auc: 0.8980
+  robust_worst_auc: 0.8801
+  worst_variant: blur2.5
+  auc_jpeg75: 0.9015
+  auc_jpeg50: 0.8993
+  auc_blur1: 0.9003
+  auc_blur2.5: 0.8801
+  auc_downup0.5: 0.8998
+  auc_noise8: 0.9002
+  auc_colour: 0.9040
+  auc_occlude40: 0.8989

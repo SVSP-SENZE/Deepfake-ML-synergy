@@ -1,0 +1,20 @@
+fold 0: auc 0.4905
+fold 1: auc 0.5080
+fold 2: auc 0.4807
+fold 3: auc 0.5018
+fold 4: auc 0.4923
+OOF AUC 0.4947 (95% cluster-bootstrap CI 0.4808-0.5097), fold mean 0.4947 +/- 0.0095
+  clean_auc: 0.4947
+  robust_mean_auc: 0.4946
+  robust_worst_auc: 0.4918
+  worst_variant: colour
+  auc_jpeg75: 0.4946
+  auc_jpeg50: 0.4950
+  auc_blur1: 0.4949
+  auc_blur2.5: 0.4968
+  auc_downup0.5: 0.4948
+  auc_noise8: 0.4947
+  auc_colour: 0.4918
+  auc_occlude40: 0.4940
+rubric proxy: accuracy 0.0/50, robustness 0.0/20
+negative control PASSED

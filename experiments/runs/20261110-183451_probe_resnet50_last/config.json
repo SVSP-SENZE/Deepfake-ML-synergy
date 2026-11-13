@@ -1,0 +1,9 @@
+{
+  "run_id": "20261110-183451_probe_resnet50_last",
+  "seed": 0,
+  "git": "no-git",
+  "probe": "logreg",
+  "backbone": "resnet50",
+  "layers": "last",
+  "C": 0.001
+}

@@ -1,0 +1,27 @@
+{
+  "run_id": "20261111-004003_d5_cnx_ema",
+  "seed": 42,
+  "git": "no-git",
+  "backbone": "convnext_t",
+  "regime": "full",
+  "folds": [
+    0,
+    1
+  ],
+  "epochs": 4,
+  "lr": 0.0001,
+  "wd": 0.05,
+  "batch_size": 64,
+  "shift": 8,
+  "label_smoothing": 0.0,
+  "head_lr_mult": 10,
+  "kill_below": null,
+  "degrade": "xstrong",
+  "loss": "bce",
+  "gce_q": 0.7,
+  "sce_beta": 1.0,
+  "prune": false,
+  "ema": 0.99,
+  "robustness": true,
+  "hflip": true
+}

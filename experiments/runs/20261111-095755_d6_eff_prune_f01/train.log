@@ -1,0 +1,32 @@
+pruning 677 flagged images from training folds
+fold 0
+  regime full: 10.70M trainable params
+  ep  1 loss 1.5245 val AUC 0.7407 (69s)
+  ep  2 loss 0.5789 val AUC 0.8000 (52s)
+  ep  3 loss 0.2851 val AUC 0.8161 (55s)
+  ep  4 loss 0.2435 val AUC 0.8195 (56s)
+fold 1
+  regime full: 10.70M trainable params
+  ep  1 loss 1.4756 val AUC 0.7668 (55s)
+  ep  2 loss 0.5590 val AUC 0.8209 (51s)
+  ep  3 loss 0.3054 val AUC 0.8332 (55s)
+  ep  4 loss 0.2497 val AUC 0.8354 (55s)
+AUC 0.8277 [0.813-0.842] folds [0.8195, 0.8354]
+  clean_auc: 0.8277
+  robust_mean_auc: 0.8130
+  robust_worst_auc: 0.6912
+  worst_variant: pixelate0.25
+  seen_mean_auc: 0.8385
+  unseen_mean_auc: 0.7824
+  orig8_mean_auc: 0.8241
+  auc_jpeg75: 0.8345
+  auc_jpeg50: 0.8360
+  auc_blur1: 0.8544
+  auc_blur2.5: 0.8247
+  auc_downup0.5: 0.8526
+  auc_noise8: 0.7423
+  auc_colour: 0.8286
+  auc_occlude40: 0.8200
+  auc_gray: 0.8309
+  auc_pixelate0.25: 0.6912
+  auc_gamma0.6: 0.8278

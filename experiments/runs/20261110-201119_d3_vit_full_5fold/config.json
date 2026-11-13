@@ -1,0 +1,24 @@
+{
+  "run_id": "20261110-201119_d3_vit_full_5fold",
+  "seed": 42,
+  "git": "no-git",
+  "backbone": "vit_b16",
+  "regime": "full",
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "epochs": 4,
+  "lr": 5e-05,
+  "wd": 0.05,
+  "batch_size": 64,
+  "shift": 8,
+  "label_smoothing": 0.0,
+  "head_lr_mult": 10,
+  "kill_below": null,
+  "robustness": true,
+  "hflip": true
+}

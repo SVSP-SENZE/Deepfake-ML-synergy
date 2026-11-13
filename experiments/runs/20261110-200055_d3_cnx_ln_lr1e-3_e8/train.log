@@ -1,0 +1,21 @@
+fold 0
+  regime layernorm: 0.02M trainable params
+  ep  1 loss 0.6244 val AUC 0.7860 (40s)
+  ep  2 loss 0.5670 val AUC 0.8160 (38s)
+  ep  3 loss 0.5047 val AUC 0.8313 (54s)
+  ep  4 loss 0.4677 val AUC 0.8392 (56s)
+  ep  5 loss 0.4386 val AUC 0.8459 (59s)
+  killed: AUC 0.8459 < 0.85 at epoch 5
+AUC 0.8459 [0.825-0.868] folds [0.8459]
+  clean_auc: 0.8459
+  robust_mean_auc: 0.8370
+  robust_worst_auc: 0.7911
+  worst_variant: blur2.5
+  auc_jpeg75: 0.8471
+  auc_jpeg50: 0.8411
+  auc_blur1: 0.8445
+  auc_blur2.5: 0.7911
+  auc_downup0.5: 0.8424
+  auc_noise8: 0.8406
+  auc_colour: 0.8450
+  auc_occlude40: 0.8440

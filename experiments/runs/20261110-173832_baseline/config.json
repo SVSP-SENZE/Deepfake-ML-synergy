@@ -1,0 +1,8 @@
+{
+  "run_id": "20261110-173832_baseline",
+  "seed": 42,
+  "git": "no-git",
+  "model": "logreg_pixels32_stats",
+  "C": 0.01,
+  "shuffle_labels": false
+}

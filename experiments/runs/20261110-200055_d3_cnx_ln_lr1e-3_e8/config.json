@@ -1,0 +1,23 @@
+{
+  "run_id": "20261110-200055_d3_cnx_ln_lr1e-3_e8",
+  "seed": 42,
+  "git": "no-git",
+  "backbone": "convnext_t",
+  "regime": "layernorm",
+  "folds": [
+    0
+  ],
+  "epochs": 8,
+  "lr": 0.001,
+  "wd": 0.05,
+  "batch_size": 64,
+  "shift": 8,
+  "label_smoothing": 0.0,
+  "head_lr_mult": 10,
+  "kill_below": [
+    5,
+    0.85
+  ],
+  "robustness": true,
+  "hflip": true
+}
