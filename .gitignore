@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+experiments/cache/
+experiments/odd_inputs/
+experiments/check_*.csv
+experiments/predictions_*.csv
+weights/*.pt
+env.ps1
