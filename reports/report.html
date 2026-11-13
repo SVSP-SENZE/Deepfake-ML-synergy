@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Deepfake Detection Report</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 16mm 15mm; }
+  :root { --ink:#0b0b0b; --muted:#52514e; --rule:#d9d8d3; --tint:#f4f3ef; --blue:#2a78d6; --orange:#eb6834; }
+  body { font-family: "Segoe UI", Arial, sans-serif; color: var(--ink); background:#fff; font-size: 10.2pt; line-height: 1.42; margin: 0; }
+  h1 { font-size: 19pt; margin: 0 0 2mm; }
+  h2 { font-size: 13pt; margin: 6mm 0 2mm; padding-bottom: 1mm; border-bottom: 1.5px solid var(--ink); break-after: avoid; }
+  h3 { font-size: 10.8pt; margin: 4mm 0 1.5mm; break-after: avoid; }
+  p { margin: 1.5mm 0; }
+  ul { margin: 1mm 0 2mm; padding-left: 5mm; } li { margin: 0.6mm 0; }
+  .sub { color: var(--muted); font-size: 10pt; margin-bottom: 4mm; }
+  table { border-collapse: collapse; width: 100%; margin: 2mm 0 3mm; font-size: 9pt; break-inside: avoid; }
+  th, td { border-bottom: 1px solid var(--rule); padding: 1.2mm 2mm; text-align: left; vertical-align: top; }
+  th { background: var(--tint); font-weight: 600; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.win td { font-weight: 600; }
+  figure { margin: 3mm 0; break-inside: avoid; }
+  figure img { width: 100%; }
+  figcaption { font-size: 8.8pt; color: var(--muted); margin-top: 1mm; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; margin: 3mm 0 2mm; }
+  .kpi { background: var(--tint); padding: 2.5mm 3mm; border-radius: 2mm; }
+  .kpi b { display:block; font-size: 15pt; } .kpi span { font-size: 8.5pt; color: var(--muted); }
+  .flow { display: flex; align-items: stretch; gap: 2mm; margin: 3mm 0; font-size: 8.6pt; break-inside: avoid; }
+  .box { border: 1.3px solid var(--ink); border-radius: 2mm; padding: 2mm; flex: 1; background:#fff; }
+  .box.v { border-color: var(--blue); } .box.c { border-color: var(--orange); }
+  .arrow { align-self: center; color: var(--muted); font-size: 12pt; }
+  .stack { display: flex; flex-direction: column; gap: 2mm; flex: 1.3; }
+  code { font-family: Consolas, monospace; font-size: 8.8pt; background: var(--tint); padding: 0 1mm; border-radius: 1mm; }
+  pre { font-family: Consolas, monospace; font-size: 8.4pt; background: var(--tint); padding: 2.5mm; border-radius: 2mm; white-space: pre-wrap; break-inside: avoid; }
+  .pb { break-before: page; }
+  .note { font-size: 9pt; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<h1>Deepfake Detection: Grouped-CV, Noise-Aware ViT + ConvNeXt Ensemble</h1>
+<div class="sub">IIIT Bangalore Deepfake ML Hackathon · Technical report · Team: [team name]</div>
+
+<div class="kpis">
+  <div class="kpi"><b>0.909</b><span>5-fold grouped out-of-fold AUC (ensemble, 7,000 images)</span></div>
+  <div class="kpi"><b>0.905</b><span>mean AUC over 11 perturbations; worst 0.886 (pixelation)</span></div>
+  <div class="kpi"><b>~3 min</b><span>inference, 3,000 test images, 6 models + flip TTA (RTX 4060)</span></div>
+  <div class="kpi"><b>682 MB</b><span>single weights file (limit 5 GB); fully offline</span></div>
+</div>
+
+<h2>1. Problem and approach</h2>
+<p>The task is binary classification of 224×224 face images as real or fake, scored mainly by ROC-AUC, with extra
+weight on robustness to unseen image degradations and to <b>fake-generation methods not in the training set</b>.
+Only the provided 7,000 training images (50.3% fake) and ImageNet-pretrained backbones may be used.</p>
+<p>Three properties of the data shaped every decision:</p>
+<ul>
+  <li><b>Near-duplicates.</b> The same source scene appears 2–11 times in differently degraded copies (noise,
+  blur, pixelation, grayscale, colour casts, occluding patches). A random split leaks these copies across folds and
+  inflates validation AUC, so all validation uses <b>grouped folds</b> built from near-duplicate clusters.</li>
+  <li><b>Label noise.</b> Confident learning on out-of-fold predictions estimates ~9.7% of labels disagree with the
+  image content (balanced between classes), which caps measurable AUC and motivates noise-aware training.</li>
+  <li><b>Distribution shift.</b> Because test fakes come from other generators, we preferred semantic, pretrained
+  representations over fragile low-level artifacts, and selected models on a <b>robustness proxy</b> (11 seeded
+  perturbations, 5 of them never used in training) rather than on clean AUC alone.</li>
+</ul>
+<p>The final model is an ensemble of a ViT-B/16 and a ConvNeXt-T, each fully fine-tuned with degradation
+augmentation on the training set minus the 677 images flagged as likely mislabelled, 3 seeds each, with flip
+test-time augmentation. Every choice below was screened on the same grouped folds and logged in
+<code>experiments/results.csv</code> (46 runs).</p>
+
+<h2>2. Validation design</h2>
+<h3>2.1 Near-duplicate clusters and grouped folds</h3>
+<ul>
+  <li>Pairwise signals: correlation of z-scored 16×16 grayscale thumbnails (max over a mirrored copy), perceptual-hash
+  Hamming distance, and cosine similarity of standardised ConvNeXt-T embeddings (catches re-crops and heavy
+  degradations that pixel signals miss).</li>
+  <li>Thresholds were calibrated by eye on review grids of sample pairs: an edge joins two images if
+  c16 ≥ 0.93, or c16 ≥ 0.90 and pHash ≤ 8, or embedding cosine ≥ 0.75. Connected components give 6,515 clusters;
+  909 images (13%) are in multi-image clusters, the largest has 11.</li>
+  <li>5-fold <code>StratifiedGroupKFold</code> on the cluster id (seed 42), frozen to <code>data/folds.csv</code>.
+  A unit test asserts no cluster spans two folds, full coverage, class balance and label consistency.</li>
+  <li>101 clusters contain both labels. Inspection shows these are a real photo and its face-swapped version (same
+  scene, subtly different face), not label errors; the models already rank the fake member higher in 77.8% of 135
+  such pairs, so they are kept and no pair loss is used.</li>
+</ul>
+<h3>2.2 Metrics and controls</h3>
+<ul>
+  <li>Out-of-fold (OOF) AUC with a 95% bootstrap CI that resamples <b>clusters</b>, not images.</li>
+  <li>Robustness proxy: 11 fixed, seeded perturbations of each validation image. <b>Seen</b> families (also used as
+  augmentation): JPEG q75/q50, Gaussian blur σ1/σ2.5, down-up resize ×0.5, colour jitter. <b>Unseen</b> families
+  (never used in training): Gaussian noise, 40 px occlusion, grayscale, pixelation ×0.25, gamma 0.6.
+  We report clean, seen-mean, unseen-mean, overall mean and worst-case AUC.</li>
+  <li>Negative control: the full pipeline with shuffled training labels gives 0.495 AUC.</li>
+  <li>Shortcut check: a logistic regression on 8×8 thumbnails reaches 0.686 AUC (a coarse face-layout cue). The
+  fine-tuned ViT keeps 0.881 AUC <i>within</i> quintiles of that thumbnail score (Spearman 0.37 with it), so most of
+  its signal is beyond the coarse cue.</li>
+</ul>
+
+<h2 class="pb">3. Architecture</h2>
+<div class="flow">
+  <div class="box">Image (any size / mode)<br>→ RGB, 224×224<br>(PIL bilinear; train and test are already 224)</div>
+  <div class="arrow">→</div>
+  <div class="box">Flip TTA<br>original + horizontal mirror</div>
+  <div class="arrow">→</div>
+  <div class="stack">
+    <div class="box v"><b>ViT-B/16</b> (augreg2 IN-21k→1k)<br>3 seeds · mean of 6 logits<br>z = (logit − μ)/σ, weight 0.7</div>
+    <div class="box c"><b>ConvNeXt-T</b> (FB IN-22k→1k)<br>3 seeds · mean of 6 logits<br>z = (logit − μ)/σ, weight 0.3</div>
+  </div>
+  <div class="arrow">→</div>
+  <div class="box">Weighted sum s<br>confidence = σ(s) = P(fake)<br>label = confidence ≥ 0.5</div>
+</div>
+<table>
+  <tr><th>Member</th><th>Family</th><th class="n">Params</th><th>Pretraining</th><th>Fine-tune recipe</th><th class="n">5-fold OOF AUC</th></tr>
+  <tr><td>ViT-B/16</td><td>Transformer</td><td class="n">85.8M</td><td>ImageNet-21k → 1k (timm augreg2)</td><td>full, lr 5e-5, strong degradation aug.</td><td class="n">0.908</td></tr>
+  <tr><td>ConvNeXt-T</td><td>CNN</td><td class="n">27.8M</td><td>ImageNet-22k → 1k (timm fb)</td><td>full, lr 1e-4, extra-strong degradation aug.</td><td class="n">0.902</td></tr>
+</table>
+<p>Each backbone gets a new single-logit linear head. The standardisation constants μ, σ are the mean and standard
+deviation of each member's clean OOF logits (training data only) and are stored in the weights file; nothing is
+fitted on test data. Weights: 0.7/0.3, chosen on OOF from a flat optimum (0.6–0.8 all within 0.0002 AUC).</p>
+
+<h3>Ensemble diversity</h3>
+<table>
+  <tr><th>Setup (5-fold OOF)</th><th class="n">Clean</th><th class="n">Unseen mean</th><th class="n">Robust mean</th><th class="n">Worst</th></tr>
+  <tr><td>ViT-B/16 alone</td><td class="n">0.9078</td><td class="n">0.9011</td><td class="n">0.9037</td><td class="n">0.8818</td></tr>
+  <tr><td>ConvNeXt-T alone</td><td class="n">0.9022</td><td class="n">0.8942</td><td class="n">0.8984</td><td class="n">0.8698</td></tr>
+  <tr><td>Equal-weight z-logit average</td><td class="n">0.9080</td><td class="n">0.9022</td><td class="n">0.9047</td><td class="n">0.8854</td></tr>
+  <tr><td>Probability average</td><td class="n">0.9075</td><td class="n">0.9014</td><td class="n">0.9041</td><td class="n">0.8837</td></tr>
+  <tr><td>Rank average</td><td class="n">0.9080</td><td class="n">0.9022</td><td class="n">0.9047</td><td class="n">0.8853</td></tr>
+  <tr class="win"><td>z-logit, 0.7 / 0.3 (shipped)</td><td class="n">0.9086</td><td class="n">0.9028</td><td class="n">0.9052</td><td class="n">0.8861</td></tr>
+  <tr><td>+ EfficientNet-B3 (folds 0–1 only, weight 0.1)</td><td class="n" colspan="4">no gain; equal weight hurts (worst −0.009)</td></tr>
+</table>
+<p>The members come from different families (self-attention over patches vs. hierarchical convolutions, different
+pretraining corpora and augmentation strength). Their OOF logits have Spearman 0.94, so they fail on partly
+different images. The clean gain is small (+0.001, within noise per fold), but the worst-case gain (+0.004) and
+unseen-family gain (+0.002) are consistent, and the second family is a hedge against the generator shift we cannot
+measure. An EfficientNet-B3 member was more diverse (Spearman 0.74) but much weaker (0.83) and was dropped.
+Flip TTA (fold 0, same model): ViT clean 0.9111 → 0.9129, worst 0.8862 → 0.8893; ConvNeXt worst 0.8813 → 0.8838.</p>
+
+<h2 class="pb">4. Hyperparameter selection (evidence)</h2>
+<figure>
+  <img src="figures/hyperparameter_evidence.png" alt="Four-panel figure of the ablations">
+  <figcaption>All values read from <code>experiments/results.csv</code> by <code>scripts/evidence_figure.py</code>.
+  (a) Frozen probe: intermediate layers beat the last layer for every backbone; ViT-B leads. (b) Full fine-tuning
+  beats partial and LayerNorm-only tuning by 0.02–0.06. (c) Degradation augmentation barely moves clean AUC but lifts
+  worst-case AUC by up to 0.054. (d) Pruning cleanlab-flagged images gives the largest gain on both metrics;
+  the shaded band is the ±0.012 two-fold noise level.</figcaption>
+</figure>
+<table>
+  <tr><th>Choice</th><th>Options screened</th><th>Picked</th><th>Evidence</th></tr>
+  <tr><td>Backbone</td><td>ViT-B/16, ConvNeXt-T, ResNet-50, EfficientNet-B3 (probe)</td><td>ViT-B/16 + ConvNeXt-T</td><td>Probe AUC 0.857 / 0.820 vs 0.800 / 0.791</td></tr>
+  <tr><td>Tuning regime</td><td>LayerNorm-only, top blocks, full</td><td>full</td><td>Fold 0: ViT 0.843 / 0.886 / 0.908; ConvNeXt 0.846 / 0.864 / 0.905</td></tr>
+  <tr><td>LR, epochs</td><td>ViT 2e-5 – 5e-5; ConvNeXt 5e-5 – 1e-4; 4–10 epochs</td><td>5e-5 / 1e-4, 4 epochs</td><td>Longer runs overfit after epoch 2–3 (train loss → 0.01); at 4 epochs last ≈ best epoch; 6 epochs with aug: 0.896 vs 0.901</td></tr>
+  <tr><td>Augmentation strength</td><td>off, weak, medium, strong, xstrong</td><td>ViT strong, ConvNeXt xstrong</td><td>Worst-case 0.848 → 0.871 (ViT), 0.817 → 0.871 (ConvNeXt); unseen mean +0.012 / +0.015</td></tr>
+  <tr><td>Label noise</td><td>BCE, label smoothing 0.1, GCE q0.7, SCE, pruning, EMA 0.99</td><td>pruning (677 images)</td><td>ConvNeXt +0.005 clean / +0.010 worst; confirmed on ViT: +0.001 / +0.011</td></tr>
+  <tr><td>Combination</td><td>z-logit, probability, rank; weights 0.5–1.0</td><td>z-logit 0.7/0.3</td><td>Table in Section 3</td></tr>
+  <tr><td>Threshold</td><td>0.40 – 0.60 on OOF</td><td>0.5</td><td>Best accuracy 0.874, F1 0.874; predicts 50.2% fake (true 50.3%)</td></tr>
+</table>
+
+<h2>5. Training pipeline</h2>
+<ul>
+  <li><b>Data.</b> Images decoded once into a memory-mapped uint8 array (7000×224×224×3). No DataLoader workers
+  (machine has little RAM); augmentation is split between CPU (degradations) and GPU (flip, shift).</li>
+  <li><b>Augmentation</b> (identical for both classes): each of colour jitter (±20–25%), down-up resample
+  (×0.35–0.9, linear/cubic), Gaussian blur (σ 0.5–3) and JPEG (q 20–95) fires with p = 0.5 (ViT) or 0.7 (ConvNeXt);
+  then horizontal flip and ±8 px reflect-padded shift. Noise, occlusion, grayscale, pixelation and gamma are
+  deliberately left out so the robustness proxy has unseen families.</li>
+  <li><b>Optimisation.</b> AdamW, weight decay 0.05, batch 64, head LR ×10, cosine schedule with one warm-up epoch,
+  4 epochs, fp16 autocast with gradient scaling, BCE on one logit.</li>
+  <li><b>Label noise.</b> cleanlab (<code>prune_by_noise_rate</code>) on the averaged 5-fold OOF probabilities of the
+  Day 3 ViT and ConvNeXt; the 677 flagged images (330 given-real, 347 given-fake) are removed from training folds only,
+  never from validation.</li>
+  <li><b>Final models.</b> Each member retrained on all 6,323 kept images with 3 seeds (1000–1002), ~5–6 min per model on
+  an RTX 4060 Laptop GPU. Stored as fp16 state dicts plus config in one file (<code>scripts/pack_weights.py</code>).</li>
+</ul>
+
+<h2 class="pb">6. Results</h2>
+<table>
+  <tr><th>Model (grouped 5-fold OOF unless stated)</th><th class="n">AUC [95% cluster CI]</th><th class="n">Seen</th><th class="n">Unseen</th><th class="n">Worst</th></tr>
+  <tr><td>Logistic regression on 32×32 pixels (Day 1)</td><td class="n">0.707 [0.694–0.720]</td><td class="n" colspan="3">—</td></tr>
+  <tr><td>ViT-B probe, intermediate layers (Day 2)</td><td class="n">0.857</td><td class="n" colspan="3">worst 0.827 (8 perturbations)</td></tr>
+  <tr><td>ViT-B full fine-tune, no degradation aug (Day 3)</td><td class="n">0.898 [0.890–0.907]</td><td class="n" colspan="3">worst 0.875 (8 perturbations)</td></tr>
+  <tr><td>ViT-B + aug + pruning (Days 4–5)</td><td class="n">0.908 [0.902–0.917]</td><td class="n">0.906</td><td class="n">0.901</td><td class="n">0.882</td></tr>
+  <tr class="win"><td>Shipped ensemble, without TTA</td><td class="n">0.909 [0.902–0.917]</td><td class="n">0.907</td><td class="n">0.903</td><td class="n">0.886</td></tr>
+</table>
+<p>At the 0.5 threshold, OOF accuracy is 0.874 and F1 is 0.874. On the 3,000 test images the model predicts 49.9%
+fake (mean confidence 0.494). Confidences are not saturated or rounded (OOF range 0.15–0.86), so AUC has no artificial
+ties. Measured AUC is capped by the label noise estimated in Section 1, so the true ranking quality is likely higher
+than these numbers.</p>
+
+<h3>Explainability (Grad-CAM)</h3>
+<figure>
+  <img src="figures/gradcam.png" alt="Grad-CAM maps for 4 fake and 4 real training images">
+  <figcaption>Grad-CAM (<code>pytorch-grad-cam</code>; ViT uses the last block's norm1 with tokens reshaped to 14×14;
+  ConvNeXt uses the last stage). The target is the evidence for the predicted class. Training images only.
+  Sanity check: maps from randomly initialised networks correlate −0.07 (ViT) and 0.08 (ConvNeXt) with these maps,
+  so they depend on the learned weights.</figcaption>
+</figure>
+<p>For real images both models focus on the central face (eyes, nose, mouth). For fakes, ConvNeXt often focuses on the
+face or blend region, while ViT spreads its evidence across scattered high-activation background patches. That pattern
+is a known Grad-CAM artifact on ViTs (high-norm "register" tokens), so the ViT maps should be read with caution. The
+gray occlusion squares in some images come from the dataset's own degradations.</p>
+
+<h2>7. Inference and efficiency</h2>
+<ul>
+  <li><code>inference_script.py</code> follows the official template and CLI (<code>--test_dir --weights --output</code>).
+  It fixes the template's <code>global</code>-after-use SyntaxError and loads everything from one file with
+  <code>pretrained=False</code> (no internet).</li>
+  <li>Handles .jpg/.jpeg/.png in any case, any size, and grayscale/RGBA/CMYK input; an unreadable file still gets a row
+  with confidence 0.5 and a warning. Rows are validated (unique ids, values in range).</li>
+  <li>Time on the RTX 4060 Laptop GPU (thermally throttled to 1.0–1.9 GHz): 158–165 s for 3,000 images, 183–190 s
+  including Python start-up (import ~25 s, model load ~12 s; data loading is negligible). This is under the 5-minute
+  tier with about 1.6× margin. fp16 autocast is the default: against fp32 it changes 1 label in 3,478 (max
+  confidence difference 0.0005) and is about 6× faster per batch. <code>--fp32</code> is available.</li>
+  <li>Two full runs produce byte-identical CSVs (cudnn deterministic, TF32 off, no sampling).</li>
+</ul>
+
+<h2 class="pb">8. Limitations and honest caveats</h2>
+<ul>
+  <li><b>Generator shift is not measured.</b> All validation fakes come from the training generators. The robustness
+  proxy covers image degradations, not new manipulation methods, so test AUC may be lower than 0.909.</li>
+  <li><b>Label noise caps and biases validation.</b> About 10% of labels look wrong and cannot be checked by eye at
+  224 px. The flags come from OOF predictions of models trained on all other folds, so a fold's labels slightly
+  influenced which training images were pruned for it; the pruning gain may be mildly overstated.</li>
+  <li><b>Small, noisy differences.</b> Most screens used 2 folds and 1 seed (±0.012 AUC). Several decisions (ensemble
+  weights, TTA) rest on gains smaller than that band and were kept because they were consistent across models or folds.</li>
+  <li><b>Coarse layout cue.</b> An 8×8 thumbnail alone reaches 0.686 AUC (fakes are darker inside a bounded face oval).
+  This may be a dataset bias that does not transfer; fine-tuned models depend on it less (Spearman 0.37).</li>
+  <li><b>Pixelation is the weakest case</b> (worst AUC 0.886) and was deliberately kept out of training to keep an
+  honest unseen check.</li>
+  <li><b>Not yet timed on a T4.</b> The local GPU was throttled; a T4 is expected to be similar or faster, but this is
+  unverified. Fallbacks: one seed per member (~3× faster) or no TTA (2×).</li>
+  <li><b>Untested alternatives.</b> CLIP / DINOv2 backbones (rules unclear), LoRA, SAM, CutMix and higher input
+  resolution were not tried.</li>
+</ul>
+
+<h2>9. Reproducibility</h2>
+<pre>python -m venv .venv &amp;&amp; .venv\Scripts\activate          # Python 3.10
+pip install -r requirements.txt                              # torch 2.7.1, timm 1.0.15, ...
+
+# Predict (the submitted CSV was produced exactly like this)
+python inference_script.py --test_dir ./test/images/ --weights ./model_weights.pt --output predictions.csv
+
+# Retrain from scratch (needs the ImageNet timm checkpoints, see README)
+python scripts/near_dups.py; python scripts/embed_dups.py; python scripts/make_folds.py
+python scripts/label_noise.py          # needs the Day 3 5-fold OOF runs (finetune_cv.py)
+python scripts/train_full.py           # 2 members x 3 seeds -> weights/
+python scripts/pack_weights.py         # -> model_weights.pt</pre>
+<p>Every experiment writes its config, seed and metrics to <code>experiments/runs/&lt;id&gt;/</code> and appends one row to
+<code>experiments/results.csv</code>. Seeds: folds 42, CV runs 42 + fold, final models 1000–1002.</p>
+
+<h2>10. Rules compliance</h2>
+<ul>
+  <li>Training data: only the provided <code>train/</code> images and <code>train_metadata.csv</code>. No external data.</li>
+  <li>Pretrained weights: ImageNet checkpoints from timm only (<code>vit_base_patch16_224.augreg2_in21k_ft_in1k</code>,
+  <code>convnext_tiny.fb_in22k_ft_in1k</code>). No deepfake-specific detectors, no CLIP / DINOv2.</li>
+  <li>Test images were used only to run the final inference script. They were not used for training, threshold or
+  weight selection, normalisation, or any analysis.</li>
+  <li>No hardcoded predictions or paths. Python 3.10, PyTorch 2.7.1; weights 682 MB (&lt; 5 GB); inference ~3 min (&lt; 60 min).</li>
+</ul>
+<p class="note">Day-by-day notes with every intermediate table: <code>reports/D1_notes.md</code> … <code>D8_notes.md</code>.</p>
+
+</body>
+</html>
