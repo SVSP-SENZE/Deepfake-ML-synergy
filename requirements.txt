@@ -1,0 +1,18 @@
+# Python 3.10. CUDA build of torch: pip install torch==2.7.1 torchvision==0.22.1 --index-url https://download.pytorch.org/whl/cu126
+# --- needed for inference_script.py ---
+torch==2.7.1
+torchvision==0.22.1
+timm==1.0.15
+numpy==1.26.4
+pandas==2.2.3
+pillow==11.2.1
+# --- needed only for training / analysis scripts ---
+scikit-learn==1.6.1
+scipy==1.15.3
+opencv-python-headless==4.11.0.86
+cleanlab==2.7.1
+imagehash==4.3.2
+safetensors==0.8.0
+grad-cam==1.5.5
+matplotlib==3.10.3
+pytest
