@@ -1,0 +1,17 @@
+{
+ "members": {
+  "vit": "d5_vit_prune,d6_vit_prune_f234",
+  "cnx": "d5_cnx_prune,d6_cnx_prune_f234"
+ },
+ "zlogit_stats": {
+  "vit": [
+   -0.09312392561776298,
+   6.732808340434375
+  ],
+  "cnx": [
+   -0.11907247570582799,
+   5.358599403527378
+  ]
+ },
+ "n_images": 7000
+}
