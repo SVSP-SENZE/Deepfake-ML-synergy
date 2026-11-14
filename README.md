@@ -16,7 +16,9 @@
 | Inference time, 3,000 images (6 models + flip TTA) | ~3 min on an RTX 4060 Laptop GPU |
 | Model size | 682 MB (limit 5 GB) |
 
-The full write-up is in the [technical report (PDF)](reports/Technical_Report.pdf).
+The full write-up is in the [technical report (PDF)](reports/Technical_Report.pdf). The dataset analysis
+(degradations, near-duplicates, label noise, where the signal is, calibration) is in the
+[exploratory data analysis](reports/EDA.md).
 
 ---
 
